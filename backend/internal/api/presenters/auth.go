@@ -8,7 +8,7 @@ type UserLogin struct {
   Token string `json:"token" bson:"token"`
   User *User  `json:"user" bson:"user"`
 }
-
+	
 func UserLoginSuccessResponse(user *UserLogin) *fiber.Map {
 	return &fiber.Map {
 		"messages": []string{

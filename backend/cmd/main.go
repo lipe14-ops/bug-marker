@@ -13,6 +13,7 @@ import (
 	"backend/internal/api/routes"
 	"backend/internal/pkg/auth"
 	"backend/internal/pkg/user"
+	"backend/internal/pkg/project"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 )
@@ -46,13 +47,19 @@ func main() {
   authRepository := auth.NewRepository(userCollection)
   authService    := auth.NewService(authRepository)
 
+	projectCollection := db.Collection("project")
+	projectRepository := project.NewRepository(projectCollection)
+	projectService    := project.NewService(projectRepository)
+
 	app := fiber.New()
 
 	app.Get("/", func (c *fiber.Ctx) error {
 		return c.SendString("MAIN PAGE")
 	})
 
-  routes.AuthRoutes(app, authService)
+	api := app.Group("/api")
+
+  routes.AuthRoutes(api, authService)
 
   app.Use(jwtware.New(jwtware.Config {
     SigningKey: jwtware.SigningKey{Key: []byte("secret")},
@@ -61,8 +68,8 @@ func main() {
     },
   }))
 
-	api := app.Group("/api")
 	routes.UserRouter(api, userService)
+	routes.ProjectRouter(api, projectService)
 
 	defer cancel()
 
