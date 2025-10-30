@@ -12,8 +12,9 @@ import (
 
 	"backend/internal/api/routes"
 	"backend/internal/pkg/auth"
-	"backend/internal/pkg/user"
+	"backend/internal/pkg/class"
 	"backend/internal/pkg/project"
+	"backend/internal/pkg/user"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 )
@@ -51,6 +52,9 @@ func main() {
 	projectRepository := project.NewRepository(projectCollection)
 	projectService    := project.NewService(projectRepository)
 
+  classRepository   := class.NewRepository(projectCollection) 
+  classService      := class.NewService(classRepository)
+
 	app := fiber.New()
 
 	app.Get("/", func (c *fiber.Ctx) error {
@@ -70,6 +74,7 @@ func main() {
 
 	routes.UserRouter(api, userService)
 	routes.ProjectRouter(api, projectService)
+	routes.ClassRouter(api, classService)
 
 	defer cancel()
 

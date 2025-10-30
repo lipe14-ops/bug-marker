@@ -42,6 +42,7 @@ func (r *repository) CreateProject(ID string, project *entities.Project) (*prese
 	project.Owner = ownerID
 	project.CreatedAt = time.Now()
 	project.Participants = []primitive.ObjectID{}
+  project.Classes      = []entities.Class{}
 
 	_, err = r.collection.InsertOne(context.Background(), project)
 
