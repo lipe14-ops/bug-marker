@@ -10,11 +10,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+
 	"backend/internal/api/routes"
 	"backend/internal/pkg/auth"
 	"backend/internal/pkg/class"
+	"backend/internal/pkg/image"
 	"backend/internal/pkg/project"
 	"backend/internal/pkg/user"
+
+  "backend/internal/pkg/image/repositories"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 )
@@ -34,12 +40,33 @@ func databaseConnection() (*mongo.Database, context.CancelFunc, error) {
 	return db, cancel, nil
 }
 
+func imageBaseConnection() (*minio.Client, error) {
+	minioClient, err := minio.New("localhost:9000", &minio.Options{
+		Creds:  credentials.NewStaticV4("minioadmin", "password",  ""),
+		Secure: false,
+	 })
+	 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return minioClient, nil
+}
+
 func main() {
 	db, cancel, err := databaseConnection()
+
 	if err != nil {
 		log.Fatal("Database Connection Error $s", err)
 	}
 	fmt.Println("Database connection success!") 
+
+  ib, err := imageBaseConnection()
+
+	if err != nil {
+		log.Fatal("Imagebase Connection Error $s", err)
+	}
+	fmt.Println("Imagebase connection success!") 
 
 	userCollection := db.Collection("users")
 	userRepository := user.NewRepository(userCollection)
@@ -54,6 +81,11 @@ func main() {
 
   classRepository   := class.NewRepository(projectCollection) 
   classService      := class.NewService(classRepository)
+
+	imageCollection := db.Collection("image")
+  imageImagebaseRepository := repositories.NewImageRepository(ib)
+  imageDatabaseRepository := repositories.NewRepository(imageCollection)
+  imageService := image.NewService(imageImagebaseRepository, imageDatabaseRepository)
 
 	app := fiber.New()
 
@@ -75,6 +107,7 @@ func main() {
 	routes.UserRouter(api, userService)
 	routes.ProjectRouter(api, projectService)
 	routes.ClassRouter(api, classService)
+  routes.ImageRouter(api, imageService)
 
 	defer cancel()
 

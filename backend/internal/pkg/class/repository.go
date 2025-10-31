@@ -3,7 +3,6 @@ package class
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -111,7 +110,6 @@ func (r *repository) ReadClass(projectID, classID string) (*presenters.Class, er
 	}
 
   for _, class := range project.Classes {
-    fmt.Println(class.ID.Hex())
     if class.ID.Hex() == classID {
       responseClass := &presenters.Class {
         ID: class.ID.Hex(),
