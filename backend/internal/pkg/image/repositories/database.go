@@ -38,10 +38,10 @@ func (r *repository) CreateImage(ID string, image *entities.Image) (*presenters.
 		return nil, err
 	}
 
-	image.ID = primitive.NewObjectID()
 	image.HasBeenSoftDeleted = false
 	image.ProjectID = projectID
 	image.CreatedAt = time.Now()
+  image.Polygons = []entities.Polygon{}
 
 	_, err = r.collection.InsertOne(context.Background(), image)
 
@@ -53,7 +53,6 @@ func (r *repository) CreateImage(ID string, image *entities.Image) (*presenters.
 		ID: image.ID.Hex(),
 		ProjectID: ID,
 		Filename: image.Filename,
-		Url: "foto url",
 	}
 
 	return responseImage, err
@@ -84,7 +83,6 @@ func (r *repository) ReadImagesByProject(ID string) ([]*presenters.Image, error)
 			ID: image.ID.Hex(),
 			ProjectID: image.ProjectID.Hex(),
 			Filename: image.Filename,
-			Url: "foto url",
 		}
 
 		responseImages = append(responseImages, responseImage)
@@ -115,7 +113,6 @@ func (r *repository) ReadImage(ID string) (*presenters.Image, error) {
 		ID: image.ID.Hex(),
 		ProjectID: image.ProjectID.Hex(),
 		Filename: image.Filename,
-		Url: "foto url",
 	}
 
 	return responseImage, nil
@@ -140,7 +137,6 @@ func (r *repository) UpdateImage(ID string, image *entities.Image) (*presenters.
 		ID: image.ID.Hex(),
 		ProjectID: image.ProjectID.Hex(),
 		Filename: image.Filename,
-		Url: "foto url",
 	}
 
 	return responseImage, nil

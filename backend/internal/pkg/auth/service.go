@@ -2,6 +2,7 @@ package auth
 
 import (
   "backend/internal/api/presenters"
+  "crypto/sha256"
 )
 
 type Service interface {
@@ -19,5 +20,7 @@ func NewService(repository Repository) Service {
 }
 
 func (r *service) ReadUserByCredentials(email, password string) (*presenters.User, error) {
-  return r.repository.ReadUserByCredentials(email, password)
+  hash := sha256.New()
+  hash.Write([]byte(password))
+  return r.repository.ReadUserByCredentials(email, string(hash.Sum(nil)))
 }

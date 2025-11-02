@@ -1,15 +1,17 @@
 package repositories
 
 import (
-	"context"
-	"time"
-	"io"
 	"bytes"
+	"context"
+	"io"
+	"path"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/minio/minio-go/v7"
 
+	"backend/internal/api/presenters"
 	"backend/internal/pkg/entities"
 
 	"mime/multipart"
@@ -17,6 +19,7 @@ import (
  
 type ImageRepository interface {
 	UploadImage(image *multipart.FileHeader) (*entities.Image, error)
+  GetPreSignedImageUrl(image *presenters.Image) (*presenters.Image, error)
 }
 
 type imageRepository struct {
@@ -53,8 +56,7 @@ func (r *imageRepository) UploadImage(image *multipart.FileHeader) (*entities.Im
 		CreatedAt: time.Now(),
 	}
 
-	filename := responseImage.ID.Hex()
-	responseImage.Url = "/image/" + filename
+	filename := responseImage.ID.Hex() + path.Ext(responseImage.Filename)
 
 	_, err = r.collection.PutObject(context.Background(), "bugmarker", filename, fileReader, int64(len(fileBytes)), minio.PutObjectOptions{
 		ContentType: "application/octet-stream",
@@ -65,4 +67,18 @@ func (r *imageRepository) UploadImage(image *multipart.FileHeader) (*entities.Im
 	}
 
 	return 	&responseImage, nil
+}
+
+func (r *imageRepository) GetPreSignedImageUrl(image *presenters.Image) (*presenters.Image, error) {
+  expireTime := time.Second * 24 * 60 * 60
+	filename := image.ID + path.Ext(image.Filename)
+  presingedURL, err := r.collection.PresignedGetObject(context.Background(), "bugmarker", filename, expireTime, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+  image.Url = presingedURL.String()
+
+  return image, nil
 }

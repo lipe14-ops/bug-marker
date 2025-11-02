@@ -36,19 +36,55 @@ func (s *service) CreateImage(ID string, image *multipart.FileHeader) (*presente
 		return nil, err
 	}
 
-	return s.database.CreateImage(ID, imageEntity)
+  imageResponse, err := s.database.CreateImage(ID, imageEntity)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return s.imagebase.GetPreSignedImageUrl(imageResponse)
 }
 
 func (s *service) UpdateImage(ID string, image *entities.Image) (*presenters.Image, error) {
-	return s.database.UpdateImage(ID, image)
+  imageResponse, err := s.database.UpdateImage(ID, image)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return s.imagebase.GetPreSignedImageUrl(imageResponse)
 }
 
 func (s *service) ReadImage(ID string) (*presenters.Image, error) {
-	return s.database.ReadImage(ID)
+  image, err := s.database.ReadImage(ID)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return s.imagebase.GetPreSignedImageUrl(image)
 }
 
 func (s *service) ReadImagesByProject(ID string) ([]*presenters.Image, error) {
-	return s.database.ReadImagesByProject(ID)
+  imagesResponse := []*presenters.Image {}
+
+  images, err := s.database.ReadImagesByProject(ID)
+
+  if err != nil {
+    return nil, err
+  }
+  
+  for _, image := range images {
+    preSignedImage, err := s.imagebase.GetPreSignedImageUrl(image)
+
+    if err != nil {
+      return nil, err
+    }
+
+    imagesResponse = append(imagesResponse, preSignedImage)
+  }
+
+  return imagesResponse, err
 }
 
 func (s *service) DeleteImage(ID string) error {

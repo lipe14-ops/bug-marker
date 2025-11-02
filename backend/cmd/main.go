@@ -17,10 +17,11 @@ import (
 	"backend/internal/pkg/auth"
 	"backend/internal/pkg/class"
 	"backend/internal/pkg/image"
+	"backend/internal/pkg/polygon"
 	"backend/internal/pkg/project"
 	"backend/internal/pkg/user"
 
-  "backend/internal/pkg/image/repositories"
+	"backend/internal/pkg/image/repositories"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 )
@@ -87,6 +88,9 @@ func main() {
   imageDatabaseRepository := repositories.NewRepository(imageCollection)
   imageService := image.NewService(imageImagebaseRepository, imageDatabaseRepository)
 
+  polygonRepository := polygon.NewRepository(imageCollection)
+  polygonService    := polygon.NewService(polygonRepository)
+
 	app := fiber.New()
 
 	app.Get("/", func (c *fiber.Ctx) error {
@@ -100,7 +104,7 @@ func main() {
   app.Use(jwtware.New(jwtware.Config {
     SigningKey: jwtware.SigningKey{Key: []byte("secret")},
     Filter: func (c *fiber.Ctx) bool {
-      return c.Path() == "/api/user/" && c.Method() == "POST"
+      return (c.Path() == "/api/user/" || c.Path() == "/api/login") && c.Method() == "POST"
     },
   }))
 
@@ -108,6 +112,7 @@ func main() {
 	routes.ProjectRouter(api, projectService)
 	routes.ClassRouter(api, classService)
   routes.ImageRouter(api, imageService)
+  routes.PolygonRouter(api, polygonService)
 
 	defer cancel()
 
