@@ -43,6 +43,7 @@ func (r *repository) CreateProject(ID string, project *entities.Project) (*prese
 	project.CreatedAt = time.Now()
 	project.Participants = []primitive.ObjectID{}
   project.Classes      = []entities.Class{}
+  project.HasBeenSoftDeleted = false
 
 	_, err = r.collection.InsertOne(context.Background(), project)
 
@@ -56,6 +57,7 @@ func (r *repository) CreateProject(ID string, project *entities.Project) (*prese
 		Title: project.Title,
 		Description: project.Description,
 		Participants: []string{},
+    HasBeenSoftDeleted: project.HasBeenSoftDeleted,
 	}
 
 	return responseProject, err
@@ -89,6 +91,7 @@ func (r *repository) ReadProjectByOwner(ID string) ([]*presenters.Project, error
       Title: project.Title,
       Description: project.Description,
       Participants: []string {},
+      HasBeenSoftDeleted: project.HasBeenSoftDeleted,
     }
 
     for _, participantID := range project.Participants {
@@ -125,6 +128,7 @@ func (r *repository) ReadProject(ID string) (*presenters.Project, error) {
 		Title: project.Title,
 		Description: project.Description,
     Participants: []string {},
+    HasBeenSoftDeleted: project.HasBeenSoftDeleted,
 	}
 
 	for _, participantID := range project.Participants {
@@ -154,6 +158,7 @@ func (r *repository) UpdateProject(ID string, project *entities.Project) (*prese
 		Owner: project.Owner.Hex(),
 		Title: project.Title,
 		Description: project.Description,
+    HasBeenSoftDeleted: project.HasBeenSoftDeleted,
 	}
 
 	for _, participantID := range project.Participants {
@@ -170,7 +175,8 @@ func (r *repository) DeleteProject(ID string) error {
 		return err
 	}
 
-	_, err = r.collection.DeleteOne(context.Background(), bson.M { "_id": projectID })
+	//_, err = r.collection.DeleteOne(context.Background(), bson.M { "_id": projectID })
+	_, err = r.collection.UpdateOne(context.Background(), bson.M { "_id": projectID }, bson.M { "$set": bson.M { "hasBeenSoftDeleted": true } })
 
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package image
 
 import (
+	"errors"
 	"mime/multipart"
 
 	"backend/internal/api/presenters"
@@ -52,6 +53,10 @@ func (s *service) UpdateImage(ID string, image *entities.Image) (*presenters.Ima
     return nil, err
   }
 
+  if imageResponse.HasBeenSoftDeleted {
+    return nil, errors.New("image not found.")
+  }
+
   return s.imagebase.GetPreSignedImageUrl(imageResponse)
 }
 
@@ -60,6 +65,10 @@ func (s *service) ReadImage(ID string) (*presenters.Image, error) {
 
   if err != nil {
     return nil, err
+  }
+
+  if image.HasBeenSoftDeleted {
+    return nil, errors.New("image not found.")
   }
 
   return s.imagebase.GetPreSignedImageUrl(image)
@@ -79,6 +88,10 @@ func (s *service) ReadImagesByProject(ID string) ([]*presenters.Image, error) {
 
     if err != nil {
       return nil, err
+    }
+
+    if image.HasBeenSoftDeleted {
+      continue
     }
 
     imagesResponse = append(imagesResponse, preSignedImage)

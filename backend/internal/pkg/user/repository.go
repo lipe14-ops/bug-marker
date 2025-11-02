@@ -33,6 +33,7 @@ func NewRepository(collection *mongo.Collection) Repository {
 func (r *repository) CreateUser(user *entities.User) (*presenters.User, error) {
 	user.ID = primitive.NewObjectID()
 	user.CreatedAt = time.Now()
+  user.HasBeenSoftDeleted = false
 	_, err := r.collection.InsertOne(context.Background(), user)
 
 	if err != nil {
@@ -43,6 +44,7 @@ func (r *repository) CreateUser(user *entities.User) (*presenters.User, error) {
 		ID: user.ID.Hex(),
 		Name: user.Name,
 		Email: user.Email,
+    HasBeenSoftDeleted: user.HasBeenSoftDeleted,
 	}
 
 	return responseUser, err
@@ -71,6 +73,7 @@ func (r *repository) ReadUser(ID string) (*presenters.User, error) {
 		ID: ID,
 		Name: user.Name,
 		Email: user.Email,
+    HasBeenSoftDeleted: user.HasBeenSoftDeleted,
 	}
 
 	return responseUser, nil
@@ -95,6 +98,7 @@ func (r *repository) UpdateUser(ID string, user *entities.User) (*presenters.Use
 		ID: ID,
 		Name: user.Name,
 		Email: user.Email,
+    HasBeenSoftDeleted: user.HasBeenSoftDeleted,
 	}
 
 	return responseUser, nil
@@ -107,7 +111,8 @@ func (r *repository) DeleteUser(ID string) error {
 		return err
 	}
 
-	_, err = r.collection.DeleteOne(context.Background(), bson.M { "_id": userID })
+	// _, err = r.collection.DeleteOne(context.Background(), bson.M { "_id": userID })
+	_, err = r.collection.UpdateOne(context.Background(), bson.M { "_id": userID }, bson.M { "$set": bson.M { "hasBeenSoftDeleted": true } })
 
 	if err != nil {
 		return err

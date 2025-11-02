@@ -1,9 +1,10 @@
 package user
 
 import (
-	"backend/internal/pkg/entities"
 	"backend/internal/api/presenters"
-  "crypto/sha256"
+	"backend/internal/pkg/entities"
+	"crypto/sha256"
+	"errors"
 )
 
 type Service interface {
@@ -32,11 +33,31 @@ func (s *service) CreateUser(user *entities.User) (*presenters.User, error) {
 }
 
 func (s *service) UpdateUser(ID string, user *entities.User) (*presenters.User, error) {
-	return s.repository.UpdateUser(ID, user)
+  userResponse, err := s.repository.UpdateUser(ID, user)
+
+  if err != nil {
+    return nil, err
+  }
+
+  if userResponse.HasBeenSoftDeleted {
+    return nil, errors.New("user not found.")
+  }
+
+  return userResponse, nil
 }
 
 func (s *service) ReadUser(ID string) (*presenters.User, error) {
-	return s.repository.ReadUser(ID)
+  userResponse, err := s.repository.ReadUser(ID)
+
+  if err != nil {
+    return nil, err
+  }
+
+  if userResponse.HasBeenSoftDeleted {
+    return nil, errors.New("user not found.")
+  }
+
+	return userResponse, nil
 }
 
 func (s *service) DeleteUser(ID string) error {

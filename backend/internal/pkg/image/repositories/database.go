@@ -53,6 +53,7 @@ func (r *repository) CreateImage(ID string, image *entities.Image) (*presenters.
 		ID: image.ID.Hex(),
 		ProjectID: ID,
 		Filename: image.Filename,
+    HasBeenSoftDeleted: image.HasBeenSoftDeleted,
 	}
 
 	return responseImage, err
@@ -83,6 +84,7 @@ func (r *repository) ReadImagesByProject(ID string) ([]*presenters.Image, error)
 			ID: image.ID.Hex(),
 			ProjectID: image.ProjectID.Hex(),
 			Filename: image.Filename,
+      HasBeenSoftDeleted: image.HasBeenSoftDeleted,
 		}
 
 		responseImages = append(responseImages, responseImage)
@@ -113,7 +115,9 @@ func (r *repository) ReadImage(ID string) (*presenters.Image, error) {
 		ID: image.ID.Hex(),
 		ProjectID: image.ProjectID.Hex(),
 		Filename: image.Filename,
+    HasBeenSoftDeleted: image.HasBeenSoftDeleted,
 	}
+
 
 	return responseImage, nil
 }
@@ -137,6 +141,7 @@ func (r *repository) UpdateImage(ID string, image *entities.Image) (*presenters.
 		ID: image.ID.Hex(),
 		ProjectID: image.ProjectID.Hex(),
 		Filename: image.Filename,
+    HasBeenSoftDeleted: image.HasBeenSoftDeleted,
 	}
 
 	return responseImage, nil
@@ -149,7 +154,8 @@ func (r *repository) DeleteImage(ID string) error {
 		return err
 	}
 
-	_, err = r.collection.DeleteOne(context.Background(), bson.M { "_id": imageID })
+	//_, err = r.collection.DeleteOne(context.Background(), bson.M { "_id": imageID })
+  _, err = r.collection.UpdateOne(context.Background(), bson.M { "_id": imageID }, bson.M { "$set": bson.M { "hasBeenSoftDeleted": true }})
 
 	if err != nil {
 		return err

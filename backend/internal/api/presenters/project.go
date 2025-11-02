@@ -10,6 +10,7 @@
 		Participants []string  `json:"participants" bson:"participants"`
 		Title        string    `json:"title" bson:"title"`
 		Description  string    `json:"description" bson:"description"`
+    HasBeenSoftDeleted bool `json:"hasBeenSoftDeleted" bson:"hasBeenSoftDeleted"`
 	}
 
 	func ProjectSuccessResponse(project *Project) *fiber.Map {

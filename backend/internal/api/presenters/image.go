@@ -9,6 +9,7 @@ type Image struct {
 	ProjectID  string `json:"projectID" bson:"projectID"`
 	Filename	 string `json:"filename" bson:"filename"`
 	Url        string `json:"url" bson:"url"`
+	HasBeenSoftDeleted bool `json:"hasBeenSoftDeleted" bson:"hasBeenSoftDeleted"`
 }
 
 func ImageSuccessResponse(image *Image) *fiber.Map {

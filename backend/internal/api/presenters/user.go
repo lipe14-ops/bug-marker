@@ -8,6 +8,7 @@
 		ID    string    `json:"id" bson:"_id"`
 		Name  string    `json:"name" bson:"name"`
 		Email string    `json:"email" bson:"email"`
+    HasBeenSoftDeleted bool `json:"hasBeenSoftDeleted" bson:"hasBeenSoftDeleted"`
 	}
 
 	func UserSuccessResponse(user *User) *fiber.Map {
