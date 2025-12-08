@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  /* Cores personalizadas */
+  --color-background-dark: #121212;
+  --color-background-light: #ffffff;
+  --color-text-dark: #ffffff;
+  --color-text-light: #000000;
+  --color-subtle-text-dark: #94a3b8;
+  --color-subtle-text-light: #64748b;
+  --color-border-dark: #2a2a2a;
+  --color-border-light: #e2e8f0;
+  --color-primary: #06f906;
+  --color-accent: #06f906;
+  
+  /* Font family */
+  --font-sans: 'Inter', system-ui, sans-serif;
+}

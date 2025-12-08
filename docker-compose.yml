@@ -36,3 +36,5 @@ volumes:
   mongo_volume:
   minio_volume:
     driver: local
+
+

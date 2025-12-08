@@ -24,6 +24,8 @@ import (
 	"backend/internal/pkg/image/repositories"
 
 	jwtware "github.com/gofiber/contrib/jwt"
+
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func databaseConnection() (*mongo.Database, context.CancelFunc, error) {
@@ -43,10 +45,10 @@ func databaseConnection() (*mongo.Database, context.CancelFunc, error) {
 
 func imageBaseConnection() (*minio.Client, error) {
 	minioClient, err := minio.New("localhost:9000", &minio.Options{
-		Creds:  credentials.NewStaticV4("minioadmin", "password",  ""),
+		Creds:  credentials.NewStaticV4("minioadmin", "password", ""),
 		Secure: false,
-	 })
-	 
+	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,59 +62,64 @@ func main() {
 	if err != nil {
 		log.Fatal("Database Connection Error $s", err)
 	}
-	fmt.Println("Database connection success!") 
+	fmt.Println("Database connection success!")
 
-  ib, err := imageBaseConnection()
+	ib, err := imageBaseConnection()
 
 	if err != nil {
 		log.Fatal("Imagebase Connection Error $s", err)
 	}
-	fmt.Println("Imagebase connection success!") 
+	fmt.Println("Imagebase connection success!")
 
 	userCollection := db.Collection("users")
 	userRepository := user.NewRepository(userCollection)
-	userService    := user.NewService(userRepository)
+	userService := user.NewService(userRepository)
 
-  authRepository := auth.NewRepository(userCollection)
-  authService    := auth.NewService(authRepository)
+	authRepository := auth.NewRepository(userCollection)
+	authService := auth.NewService(authRepository)
 
 	projectCollection := db.Collection("project")
 	projectRepository := project.NewRepository(projectCollection)
-	projectService    := project.NewService(projectRepository)
+	projectService := project.NewService(projectRepository)
 
-  classRepository   := class.NewRepository(projectCollection) 
-  classService      := class.NewService(classRepository)
+	classRepository := class.NewRepository(projectCollection)
+	classService := class.NewService(classRepository)
 
 	imageCollection := db.Collection("image")
-  imageImagebaseRepository := repositories.NewImageRepository(ib)
-  imageDatabaseRepository := repositories.NewRepository(imageCollection)
-  imageService := image.NewService(imageImagebaseRepository, imageDatabaseRepository)
+	imageImagebaseRepository := repositories.NewImageRepository(ib)
+	imageDatabaseRepository := repositories.NewRepository(imageCollection)
+	imageService := image.NewService(imageImagebaseRepository, imageDatabaseRepository)
 
-  polygonRepository := polygon.NewRepository(imageCollection)
-  polygonService    := polygon.NewService(polygonRepository)
+	polygonRepository := polygon.NewRepository(imageCollection)
+	polygonService := polygon.NewService(polygonRepository)
 
 	app := fiber.New()
 
-	app.Get("/", func (c *fiber.Ctx) error {
+	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("MAIN PAGE")
 	})
 
 	api := app.Group("/api")
 
-  routes.AuthRoutes(api, authService)
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "*",
+	}))
 
-  app.Use(jwtware.New(jwtware.Config {
-    SigningKey: jwtware.SigningKey{Key: []byte("secret")},
-    Filter: func (c *fiber.Ctx) bool {
-      return (c.Path() == "/api/user/" || c.Path() == "/api/login") && c.Method() == "POST"
-    },
-  }))
+	routes.AuthRoutes(api, authService)
+
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
+		Filter: func(c *fiber.Ctx) bool {
+			return (c.Path() == "/api/user/" || c.Path() == "/api/login") && c.Method() == "POST"
+		},
+	}))
 
 	routes.UserRouter(api, userService)
 	routes.ProjectRouter(api, projectService)
 	routes.ClassRouter(api, classService)
-  routes.ImageRouter(api, imageService)
-  routes.PolygonRouter(api, polygonService)
+	routes.ImageRouter(api, imageService)
+	routes.PolygonRouter(api, polygonService)
 
 	defer cancel()
 

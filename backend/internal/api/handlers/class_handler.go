@@ -33,10 +33,10 @@ func CreateClass(service class.Service) fiber.Handler {
 			return c.JSON(presenters.ClassErrorResponse(errors.New("invalid project id")))
 		}
 
-		class := entities.Class {
-			Name: requestBody.Name,
+		class := entities.Class{
+			Name:        requestBody.Name,
 			Description: requestBody.Description,
-			Color: requestBody.Color,
+			Color:       requestBody.Color,
 		}
 
 		result, err := service.CreateClass(projectID, &class)
@@ -45,7 +45,7 @@ func CreateClass(service class.Service) fiber.Handler {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ClassErrorResponse(err))
 		}
-		
+
 		return c.JSON(presenters.ClassSuccessResponse(result))
 	}
 }
@@ -109,16 +109,16 @@ func UpdateClass(service class.Service) fiber.Handler {
 		var requestBody entities.ClassPutRequest
 		err := c.BodyParser(&requestBody)
 
-		if requestBody.Name == "" || requestBody.Description == "" || requestBody.Color == "" {
+		if requestBody.Name == "" || requestBody.Color == "" {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ClassErrorResponse(errors.New("invalid fields")))
 		}
-    
-		class := entities.Class {
-      ID: requestBody.ID,
-			Name: requestBody.Name,
-      Description: requestBody.Description,
-      Color: requestBody.Color,
+
+		class := entities.Class{
+			ID:          requestBody.ID,
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Color:       requestBody.Color,
 		}
 
 		result, err := service.UpdateClass(projectID, &class)
