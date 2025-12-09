@@ -15,7 +15,12 @@
       />
     </v-layer>
     <v-layer  v-if="polys">
-       <v-group v-for="poly in polys" >
+       <!-- Render non-selected polygons first (without circles) -->
+       <v-group v-for="poly in polys.filter(p => p.id != props.editingPolygonId)" :key="poly.id">
+        <v-line   :config="polygonConfig(poly)"/>
+      </v-group>
+       <!-- Render selected polygon on top (with circles) -->
+       <v-group v-for="poly in polys.filter(p => p.id == props.editingPolygonId)" :key="poly.id">
         <v-line   :config="polygonConfig(poly)"/>
         <v-circle @dragmove="handleDragMove" @dragend="handleDragEnd" v-for="point in polygonPoints(poly)" :config="pointConfig(point)" />
       </v-group>
@@ -45,6 +50,10 @@ const props = defineProps({
   },
   projectID: {
     type: String
+  },
+  editingPolygonId: {
+    type: [String, Number],
+    default: null
   }
 });
 
@@ -199,13 +208,20 @@ function polygonPoints(poly) {
 
 function polygonConfig(poly) {
   console.log(poly)
+  // If in edit mode, reduce opacity for non-selected polygons
+  const isSelected = poly.id == props.editingPolygonId;
+  const fillOpacity = props.editingPolygonId && !isSelected ? '77' : '88';
+  const fill = poly.classe?.color + fillOpacity;
+  const strokeOpacity = props.editingPolygonId && !isSelected ? 0.7 : 1;
+  
   return {
     id: poly.id,
     points: poly.coords,
-    fill: poly.classe?.color + '88',
+    fill: fill,
     stroke: poly.classe?.color,
     strokeWidth: 1,
     closed: true,
+    opacity: strokeOpacity
   };
 }
 

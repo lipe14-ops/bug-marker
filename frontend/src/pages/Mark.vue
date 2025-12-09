@@ -144,6 +144,18 @@ const handleDeletePolygon = (id) => {
   });
 }
 
+const handleAddPoint = (polygonId) => {
+  // Set the current tool to draw and remember which polygon to add points to
+  selectedTool.value = 'draw'
+  polygonEditId.value = polygonId
+  console.log('Adicionar ponto no polígono:', polygonId)
+}
+
+const exitEditMode = () => {
+  selectedTool.value = 'select'
+  polygonEditId.value = ''
+}
+
 function createPolygon() {
   fetch(`http://localhost:8000/api/project/image/${selectedImage.value}/polygon/`, {
       method: "POST", // Or POST, PUT, DELETE, etc.
@@ -203,6 +215,12 @@ function updatePolygon() {
 <template>
 <div class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
 <div class="flex flex-col h-screen w-full">
+  <div v-if="selectedTool === 'draw' && polygonEditId" class="fixed top-4 right-4 z-50">
+    <div class="px-4 py-2 rounded flex items-center gap-3 shadow-lg text-white font-semibold" style="background-color: #08E308;">
+      <div>✓ Modo Edição: adicionando pontos ao polígono {{ polygonEditId }}</div>
+      <button @click="exitEditMode" class="ml-2 bg-white/20 hover:bg-white/30 text-sm px-3 py-1 rounded">Sair do modo de edição</button>
+    </div>
+  </div>
 <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 py-3 bg-background-dark flex-shrink-0">
 <div class="flex items-center gap-4 text-white">
 <div class="size-5 text-primary">
@@ -243,11 +261,12 @@ function updatePolygon() {
   @delete="handleDeletePolygon"
   @add-point="handleAddPoint"
   :projectID="projectID" 
+  :editing-polygon-id="polygonEditId"
 />
 </aside>
 <main class="flex-1 w-full flex flex-col bg-[#111111] overflow-hidden border-l border-white/10">
   <BmClassesPage :projectId="props.projectID" v-if="selectedTab === 'classes'" />
-  <BmCanva :projectID="projectID" :imageURL="selectedUrl" :polygons="polygons" v-if="selectedTab !== 'classes'"/>
+  <BmCanva :projectID="projectID" :imageURL="selectedUrl" :polygons="polygons" :editingPolygonId="polygonEditId" v-if="selectedTab !== 'classes'"/>
 </main>
 
 </div>

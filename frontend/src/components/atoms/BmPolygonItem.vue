@@ -1,7 +1,8 @@
 <template>
   <details 
     class="group bg-white/5 rounded-lg border border-white/10 hover:border-white/20 transition-colors duration-300 mt-4"
-    :class="{ 'open:border-primary/50': !isOpen }"
+    :class="[{ 'shadow-lg': isEditing }, { 'open:border-primary/50': !isOpen }]"
+    :style="isEditing ? { borderColor: '#08E308', boxShadow: '0 0 0 2px #08E308' } : {}"
     :open="isOpen"
   >
     <summary class="p-4 list-none flex justify-between items-center cursor-pointer">
@@ -17,6 +18,11 @@
           icon="edit"
           title="Editar polígono"
           @click="$emit('edit')"
+        />
+        <BmPolygonActionButton
+          icon="add"
+          title="Adicionar ponto"
+          @click="$emit('add-point', id)"
         />
         <BmPolygonActionButton
           icon="delete"
@@ -58,6 +64,10 @@ import BmColorIndicator from './BmColorIndicator.vue'
 import BmPolygonActionButton from './BmPolygonActionButton.vue'
 
 defineProps({
+  id: {
+    type: [String, Number],
+    required: false
+  },
   name: {
     type: String,
     required: true
@@ -77,8 +87,12 @@ defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  isEditing: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['edit', 'delete'])
+defineEmits(['edit', 'delete', 'add-point'])
 </script>

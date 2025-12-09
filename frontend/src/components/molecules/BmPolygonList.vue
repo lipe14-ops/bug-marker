@@ -14,22 +14,20 @@
           <span>Novo Polígono</span>
         </button>
       </div>
-        <BmPolygonActionButton
-          icon="edit"
-          title="Editar polígono"
-          @click="$emit('add-point', polygon)"
-        />
     </div>
     <div class="flex-1 min-h-0 overflow-y-auto px-4 pb-4 space-y-4 custom-scrollbar">
       <BmPolygonItem
         v-for="polygon in polygons"
         :name="polygon.name"
+        :id="polygon.id"
         :class-name="polygon.className"
         :class-color="classes[polygon.classID]?.color || '#00000000'"
         :points="polygon.coordinates"
         :is-open="polygon.id === openPolygonId"
+        :is-editing="polygon.id === editingPolygonId"
         @edit="$emit('edit', polygon)"
         @delete="$emit('delete', polygon.id)"
+        @add-point="$emit('add-point', polygon.id)"
       
       />
     </div>
@@ -66,6 +64,11 @@ const props = defineProps({
     type: Number,
     default: null
   }
+  ,
+  editingPolygonId: {
+    type: [String, Number],
+    default: null
+  }
 })
 
 const classes = ref({})
@@ -91,5 +94,5 @@ const classes = ref({})
 
 console.log('Polygons prop:', props.polygons)
 
-defineEmits(['new', 'edit', 'delete'])
+defineEmits(['new', 'edit', 'delete', 'add-point'])
 </script>
