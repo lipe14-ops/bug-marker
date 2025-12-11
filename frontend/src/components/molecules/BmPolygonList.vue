@@ -27,7 +27,7 @@
         :is-editing="polygon.id === editingPolygonId"
         @edit="$emit('edit', polygon)"
         @delete="$emit('delete', polygon.id)"
-        @add-point="$emit('add-point', polygon.id)"
+        @add-point="$emit('add-point', polygon)"
       
       />
     </div>

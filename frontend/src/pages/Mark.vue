@@ -144,11 +144,14 @@ const handleDeletePolygon = (id) => {
   });
 }
 
-const handleAddPoint = (polygonId) => {
+const handleAddPoint = (polygon) => {
   // Set the current tool to draw and remember which polygon to add points to
+  console.log(polygon)
   selectedTool.value = 'draw'
-  polygonEditId.value = polygonId
-  console.log('Adicionar ponto no polígono:', polygonId)
+  polygonEditId.value = polygon.id
+  polygonEditName.value = polygon.name
+  selectedOption.value = polygon.classID
+  polygonEditCoords.value = polygon.coordinates
 }
 
 const exitEditMode = () => {
@@ -164,9 +167,9 @@ function createPolygon() {
           "Content-Type": "application/json" // Example for JSON data
       },
       body: JSON.stringify({
-        name: polygonCreateName.value,
+        name: polygonCreateName.value,                        
         classID: selectedOption.value.id,
-        coordinates: [[0, 0], [0, 10], [10, 10], [0, 0]]
+        coordinates: [ ]
       })
     })
     .then(response => response.json()) // Parse the response as JSON      
@@ -182,6 +185,44 @@ function createPolygon() {
 function openPolygon() {
   polygonCreateShow.value = true
   console.log('Open polygon for image ID:', selectedImage.value)
+}
+
+function handleMouseDown(e) {
+  console.log('Mouse down event:', e)
+
+  const coords = polygonEditCoords.value
+      coords.push([
+        e.evt.offsetX,
+        e.evt.offsetY,
+      ])
+
+  console.log(e)
+
+
+  fetch(`http://localhost:8000/api/project/image/${selectedImage.value}/polygon/${polygonEditId.value}`, {
+    method: "PUT",
+    body: JSON.stringify({
+        name: polygonEditName.value,
+        classID: selectedOption.value,
+        coordinates: coords
+    }),
+    headers: {  
+      "Authorization": `Bearer ${tokenStore.token}`,
+      "Content-Type": "application/json"
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    polygons.value = polygons.value.map(poly => {
+      if (poly.id == polygonEditId.value) {
+        poly.coordinates = coords
+      }
+      return poly
+    })
+  })
+  .catch(error => {
+    console.error('Error editing class:', error)
+  })
 }
 
 
@@ -266,7 +307,7 @@ function updatePolygon() {
 </aside>
 <main class="flex-1 w-full flex flex-col bg-[#111111] overflow-hidden border-l border-white/10">
   <BmClassesPage :projectId="props.projectID" v-if="selectedTab === 'classes'" />
-  <BmCanva :projectID="projectID" :imageURL="selectedUrl" :polygons="polygons" :editingPolygonId="polygonEditId" v-if="selectedTab !== 'classes'"/>
+  <BmCanva @mouse-click="handleMouseDown" :projectID="projectID" :imageURL="selectedUrl" :polygons="polygons" :editingPolygonId="polygonEditId" v-if="selectedTab !== 'classes'"/>
 </main>
 
 </div>
